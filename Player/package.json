@@ -1,0 +1,37 @@
+{
+  "name": "broadwayjs-quickstart",
+  "version": "1.0.0",
+  "description": "A simple broadwayjs quickstart",
+  "private": true,
+  "scripts": {
+    "fix": "tslint --fix -c tslint.json",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --config ./scripts --mode development",
+    "build": "cross-env NODE_ENV=production webpack --config ./scripts --mode production",
+    "analyse": "cross-env NODE_ENV=development webpack --profile --json > stats.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "matrixbirds",
+  "devDependencies": {
+    "clean-webpack-plugin": "^2.0.1",
+    "copy-webpack-plugin": "^5.0.3",
+    "cross-env": "^5.2.0",
+    "css-loader": "^2.1.1",
+    "file-loader": "^3.0.1",
+    "friendly-errors-webpack-plugin": "^1.7.0",
+    "html-webpack-plugin": "^3.2.0",
+    "jquery": "^3.4.1",
+    "mini-css-extract-plugin": "^0.5.0",
+    "node-sass": "^4.12.0",
+    "sass-loader": "^7.1.0",
+    "style-loader": "^0.23.1",
+    "ts-loader": "^5.3.3",
+    "tslint": "^5.15.0",
+    "tslint-loader": "^3.5.4",
+    "tslint-webpack-plugin": "^2.0.4",
+    "typescript": "^3.4.1",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.2.1"
+  }
+}
