@@ -1,27 +1,10 @@
+import Player from './player'
+
 let PARANOID = true
 
 function assert(condition, message) {
   if (!condition) {
     console.error(message)
-  }
-}
-
-export class Size {
-  constructor(w, h) {
-    this.w = w
-    this.h = h
-  }
-
-  toString () {
-    return `(${this.w}, ${this.h})`
-  }
-
-  getHalfSize () {
-    return new Size(this.w >>> 1, this.h >>> 1)
-  }
-
-  length () {
-    return this.w * this.h
   }
 }
 
@@ -48,6 +31,25 @@ export class Stream {
       }
     }
     xhr.send(null)
+  }
+}
+
+export class Size {
+  constructor(w, h) {
+    this.w = w
+    this.h = h
+  }
+
+  toString () {
+    return `(${this.w}, ${this.h})`
+  }
+
+  getHalfSize () {
+    return new Size(this.w >>> 1, this.h >>> 1)
+  }
+
+  length () {
+    return this.w * this.h
   }
 }
 
@@ -84,23 +86,23 @@ export class Bytestream {
     if (this.pos > this.end - (rows * cols) * 4)
       return null;
     if (cols == 1) {
-      var array = new Uint32Array(rows);
-      for (var i = 0; i < rows; i++) {
+      const array = new Uint32Array(rows);
+      for (let i = 0; i < rows; i++) {
         array[i] = this.readU32();
       }
       return array;
     } else {
-      var array = new Array(rows);
-      for (var i = 0; i < rows; i++) {
-        var row = null;
+      const array = new Array(rows);
+      for (let i = 0; i < rows; i++) {
+        let row = null;
         if (names) {
           row = {};
-          for (var j = 0; j < cols; j++) {
+          for (let j = 0; j < cols; j++) {
             row[names[j]] = this.readU32();
           }
         } else {
           row = new Uint32Array(cols);
-          for (var j = 0; j < cols; j++) {
+          for (let j = 0; j < cols; j++) {
             row[j] = this.readU32();
           }
         }
@@ -125,7 +127,7 @@ export class Bytestream {
   readU16() {
     if (this.pos >= this.end - 1)
       return null;
-    var res = this.bytes[this.pos + 0] << 8 | this.bytes[this.pos + 1];
+    const res = this.bytes[this.pos + 0] << 8 | this.bytes[this.pos + 1];
     this.pos += 2;
     return res;
   }
@@ -135,21 +137,21 @@ export class Bytestream {
   }
 
   readU24() {
-    var pos = this.pos;
-    var bytes = this.bytes;
+    const pos = this.pos;
+    const bytes = this.bytes;
     if (pos > this.end - 3)
       return null;
-    var res = bytes[pos + 0] << 16 | bytes[pos + 1] << 8 | bytes[pos + 2];
+    const res = bytes[pos + 0] << 16 | bytes[pos + 1] << 8 | bytes[pos + 2];
     this.pos += 3;
     return res;
   }
 
   peek32(advance) {
-    var pos = this.pos;
-    var bytes = this.bytes;
+    const pos = this.pos;
+    const bytes = this.bytes;
     if (pos > this.end - 4)
       return null;
-    var res = bytes[pos + 0] << 24 | bytes[pos + 1] << 16 | bytes[pos + 2] << 8 | bytes[pos + 3];
+    const res = bytes[pos + 0] << 24 | bytes[pos + 1] << 16 | bytes[pos + 2] << 8 | bytes[pos + 3];
     if (advance) {
       this.pos += 4;
     }
@@ -165,11 +167,11 @@ export class Bytestream {
   }
 
   read4CC() {
-    var pos = this.pos;
+    const pos = this.pos;
     if (pos > this.end - 4)
       return null;
-    var res = "";
-    for (var i = 0; i < 4; i++) {
+    let res = "";
+    for (let i = 0; i < 4; i++) {
       res += String.fromCharCode(this.bytes[pos + i]);
     }
     this.pos += 4;
@@ -185,27 +187,27 @@ export class Bytestream {
   }
 
   readISO639() {
-    var bits = this.readU16();
-    var res = "";
-    for (var i = 0; i < 3; i++) {
-      var c = (bits >>> (2 - i) * 5) & 0x1f;
+    const bits = this.readU16();
+    let res = "";
+    for (let i = 0; i < 3; i++) {
+      const c = (bits >>> (2 - i) * 5) & 0x1f;
       res += String.fromCharCode(c + 0x60);
     }
     return res;
   }
 
   readUTF8 (length) {
-    var res = "";
-    for (var i = 0; i < length; i++) {
+    let res = "";
+    for (let i = 0; i < length; i++) {
       res += String.fromCharCode(this.readU8());
     }
     return res;
   }
 
   readPString (max) {
-    var len = this.readU8();
+    const len = this.readU8();
     assert (len <= max);
-    var res = this.readUTF8(len);
+    let res = this.readUTF8(len);
     this.reserved(max - len - 1, 0);
     return res;
   }
@@ -215,7 +217,7 @@ export class Bytestream {
   }
 
   reserved (length, value) {
-    for (var i = 0; i < length; i++) {
+    for (let i = 0; i < length; i++) {
       assert (this.readU8() == value);
     }
   }
@@ -240,9 +242,9 @@ export class MP4Reader {
 
   readBoxes (stream, parent) {
     while (stream.peek32()) {
-      var child = this.readBox(stream);
+      const child = this.readBox(stream);
       if (child.type in parent) {
-        var old = parent[child.type];
+        const old = parent[child.type];
         if (!(old instanceof Array)) {
           parent[child.type] = [old];
         }
@@ -254,7 +256,7 @@ export class MP4Reader {
   }
   
   readBox (stream) {
-    var box = { offset: stream.position };
+    const box = { offset: stream.position };
 
     function readHeader() {
       box.size = stream.readU32();
@@ -274,21 +276,22 @@ export class MP4Reader {
       stream.skip(remainingBytes());
     }
 
-    var readRemainingBoxes = function () {
-      var subStream = stream.subStream(stream.position, remainingBytes());
+    const readRemainingBoxes = function () {
+      const subStream = stream.subStream(stream.position, remainingBytes());
       this.readBoxes(subStream, box);
       stream.skip(subStream.length);
     }.bind(this);
 
     readHeader();
 
+    let count = 0
     switch (box.type) {
       case 'ftyp':
         box.name = "File Type Box";
         box.majorBrand = stream.read4CC();
         box.minorVersion = stream.readU32();
         box.compatibleBrands = new Array((box.size - 16) / 4);
-        for (var i = 0; i < box.compatibleBrands.length; i++) {
+        for (let i = 0; i < box.compatibleBrands.length; i++) {
           box.compatibleBrands[i] = stream.read4CC();
         }
         break;
@@ -424,14 +427,14 @@ export class MP4Reader {
         box.avcLevelIndication = stream.readU8();
         box.lengthSizeMinusOne = stream.readU8() & 3;
         assert (box.lengthSizeMinusOne == 3, "TODO");
-        var count = stream.readU8() & 31;
+        count = stream.readU8() & 31;
         box.sps = [];
-        for (var i = 0; i < count; i++) {
+        for (let i = 0; i < count; i++) {
           box.sps.push(stream.readU8Array(stream.readU16()));
         }
-        var count = stream.readU8() & 31;
+        count = stream.readU8() & 31;
         box.pps = [];
-        for (var i = 0; i < count; i++) {
+        for (let i = 0; i < count; i++) {
           box.pps.push(stream.readU8Array(stream.readU16()));
         }
         skipRemainingBytes();
@@ -462,7 +465,7 @@ export class MP4Reader {
         box.name = "Sample Size Box";
         readFullHeader();
         box.sampleSize = stream.readU32();
-        var count = stream.readU32();
+        count = stream.readU32();
         if (box.sampleSize == 0) {
           box.table = stream.readU32Array(count);
         }
@@ -498,21 +501,21 @@ export class MP4Reader {
   }
 
   traceSamples() {
-    var video = this.tracks[1];
-    var audio = this.tracks[2];
+    let video = this.tracks[1];
+    let audio = this.tracks[2];
 
     console.info("Video Samples: " + video.getSampleCount());
     console.info("Audio Samples: " + audio.getSampleCount());
 
-    var vi = 0;
-    var ai = 0;
+    let vi = 0;
+    let ai = 0;
 
-    for (var i = 0; i < 100; i++) {
-      var vo = video.sampleToOffset(vi);
-      var ao = audio.sampleToOffset(ai);
+    for (let i = 0; i < 100; i++) {
+      const vo = video.sampleToOffset(vi);
+      const ao = audio.sampleToOffset(ai);
 
-      var vs = video.sampleToSize(vi, 1);
-      var as = audio.sampleToSize(ai, 1);
+      const vs = video.sampleToSize(vi, 1);
+      const as = audio.sampleToSize(ai, 1);
 
       if (vo < ao) {
         console.info("V Sample " + vi + " Offset : " + vo + ", Size : " + vs);
@@ -542,9 +545,9 @@ export class Track {
    * Computes the size of a range of samples, returns zero if length is zero.
    */
   sampleToSize(start, length) {
-    var table = this.getSampleSizeTable();
-    var size = 0;
-    for (var i = start; i < start + length; i++) {
+    const table = this.getSampleSizeTable();
+    let size = 0;
+    for (let i = start; i < start + length; i++) {
       size += table[i];
     }
     return size;
@@ -579,10 +582,10 @@ export class Track {
      * TODO: Determine if we should memoize this function.
      */
 
-    var table = this.trak.mdia.minf.stbl.stsc.table;
+    const table = this.trak.mdia.minf.stbl.stsc.table;
 
     if (table.length === 1) {
-      var row = table[0];
+      let row = table[0];
       assert (row.firstChunk === 1);
       return {
         index: Math.floor(sample / row.samplesPerChunk),
@@ -590,13 +593,13 @@ export class Track {
       };
     }
 
-    var totalChunkCount = 0;
-    for (var i = 0; i < table.length; i++) {
-      var row = table[i];
+    let totalChunkCount = 0;
+    for (let i = 0; i < table.length; i++) {
+      const row = table[i];
       if (i > 0) {
-        var previousRow = table[i - 1];
-        var previousChunkCount = row.firstChunk - previousRow.firstChunk;
-        var previousSampleCount = previousRow.samplesPerChunk * previousChunkCount;
+        const previousRow = table[i - 1];
+        const previousChunkCount = row.firstChunk - previousRow.firstChunk;
+        const previousSampleCount = previousRow.samplesPerChunk * previousChunkCount;
         if (sample >= previousSampleCount) {
           sample -= previousSampleCount;
           if (i == table.length - 1) {
@@ -617,13 +620,13 @@ export class Track {
     assert(false);
   }
   chunkToOffset(chunk) {
-    var table = this.trak.mdia.minf.stbl.stco.table;
+    const table = this.trak.mdia.minf.stbl.stco.table;
     return table[chunk];
   }
 
   sampleToOffset(sample) {
-    var res = this.sampleToChunk(sample);
-    var offset = this.chunkToOffset(res.index);
+    const res = this.sampleToChunk(sample);
+    const offset = this.chunkToOffset(res.index);
     return offset + this.sampleToSize(sample - res.offset, res.offset);
   }
   /**
@@ -649,10 +652,10 @@ export class Track {
      *
      * TODO: Determine if we should memoize this function.
      */
-    var table = this.trak.mdia.minf.stbl.stts.table;
-    var sample = 0;
-    for (var i = 0; i < table.length; i++) {
-      var delta = table[i].count * table[i].delta;
+    const table = this.trak.mdia.minf.stbl.stts.table;
+    const sample = 0;
+    for (let i = 0; i < table.length; i++) {
+      const delta = table[i].count * table[i].delta;
       if (time >= delta) {
         time -= delta;
         sample += table[i].count;
@@ -666,8 +669,8 @@ export class Track {
    */
   getTotalTime() {
     if (PARANOID) {
-      var table = this.trak.mdia.minf.stbl.stts.table;
-      var duration = 0;
+      const table = this.trak.mdia.minf.stbl.stts.table;
+      let duration = 0;
       for (var i = 0; i < table.length; i++) {
         duration += table[i].count * table[i].delta;
       }
@@ -700,12 +703,12 @@ export class Track {
    * This function returns an array of NAL units without their length prefixes.
    */
   getSampleNALUnits (sample) {
-    var bytes = this.file.stream.bytes;
-    var offset = this.sampleToOffset(sample);
-    var end = offset + this.sampleToSize(sample, 1);
-    var nalUnits = [];
+    const bytes = this.file.stream.bytes;
+    let offset = this.sampleToOffset(sample);
+    const end = offset + this.sampleToSize(sample, 1);
+    const nalUnits = [];
     while(end - offset > 0) {
-      var length = (new Bytestream(bytes.buffer, offset)).readU32();
+      const length = (new Bytestream(bytes.buffer, offset)).readU32();
       nalUnits.push(bytes.subarray(offset + 4, offset + length + 4));
       offset = offset + length + 4;
     }
@@ -746,21 +749,23 @@ export class MP4Player {
     this.webgl = this.avc.webgl;
     
     this.avc.onPictureDecoded = () => {
-      this.updateStatistics.call(this)
+      this.updateStatistics()
     };
     
     this.canvas = this.avc.canvas;
+
+    this.fps = 1
   }
 
   updateStatistics() {
-    var s = this.statistics;
+    const s = this.statistics;
     s.videoPictureCounter += 1;
     s.windowPictureCounter += 1;
-    var now = Date.now();
+    const now = Date.now();
     if (!s.videoStartTime) {
       s.videoStartTime = now;
     }
-    var videoElapsedTime = now - s.videoStartTime;
+    const videoElapsedTime = now - s.videoStartTime;
     s.elapsed = videoElapsedTime / 1000;
     if (videoElapsedTime < 1000) {
       return;
@@ -770,8 +775,8 @@ export class MP4Player {
       s.windowStartTime = now;
       return;
     } else if ((now - s.windowStartTime) > 1000) {
-      var windowElapsedTime = now - s.windowStartTime;
-      var fps = (s.windowPictureCounter / windowElapsedTime) * 1000;
+      const windowElapsedTime = now - s.windowStartTime;
+      const fps = (s.windowPictureCounter / windowElapsedTime) * 1000;
       s.windowStartTime = now;
       s.windowPictureCounter = 0;
 
@@ -780,7 +785,7 @@ export class MP4Player {
       s.fps = fps;
     }
 
-    var fps = (s.videoPictureCounter / videoElapsedTime) * 1000;
+    const fps = (s.videoPictureCounter / videoElapsedTime) * 1000;
     s.fpsSinceStart = fps;
     this.onStatisticsUpdated(this.statistics);
     return;
@@ -789,67 +794,76 @@ export class MP4Player {
   readAll(callback) {
     console.info("MP4Player::readAll()");
     this.stream.readAll(null, function (buffer) {
-      console.log("reading")
       this.reader = new MP4Reader(new Bytestream(buffer));
       this.reader.read();
-      var video = this.reader.tracks[1];
+      const video = this.reader.tracks[1];
+      console.log("video", video.trak)
       this.size = new Size(video.trak.tkhd.width, video.trak.tkhd.height);
       console.info("MP4Player::readAll(), length: " +  this.reader.stream.length);
       if (callback) callback();
     }.bind(this));
   }
 
+  set fps (frameRate) {
+    this._fps = frameRate
+    console.log("set fps as " + this._fps)
+  }
+
+  get fps () {
+    return this._fps
+  }
+
   play() {
-    var reader = this.reader;
+    const reader = this.reader;
 
     if (!reader) {
       this.readAll(this.play.bind(this));
       return;
     };
 
-    var video = reader.tracks[1];
-    var audio = reader.tracks[2];
+    const video = reader.tracks[1];
+    const audio = reader.tracks[2];
 
-    var avc = reader.tracks[1].trak.mdia.minf.stbl.stsd.avc1.avcC;
-    var sps = avc.sps[0];
-    var pps = avc.pps[0];
+    const avc = reader.tracks[1].trak.mdia.minf.stbl.stsd.avc1.avcC;
+    const sps = avc.sps[0];
+    const pps = avc.pps[0];
 
     /* Decode Sequence & Picture Parameter Sets */
     this.avc.decode(sps);
     this.avc.decode(pps);
 
     /* Decode Pictures */
-    var pic = 0;
-    setTimeout(function foo() {
-      var avc = this.avc;
+    let pic = 0;
+    setTimeout(function decodePictures() {
+      const avc = this.avc;
       video.getSampleNALUnits(pic).forEach(function (nal) {
         avc.decode(nal);
       });
-      pic ++;
-      if (pic < 3000) {
-        setTimeout(foo.bind(this), 1);
+      pic++
+      if (pic < 5000) {
+        setTimeout(decodePictures.bind(this), this.fps);
       };
-    }.bind(this), 1);
+    }.bind(this), this.fps);
   }
 }
 
 export class Broadway {
   constructor(div) {
-    var src = div.attributes.src ? div.attributes.src.value : undefined;
-    var width = div.attributes.width ? div.attributes.width.value : 640;
-    var height = div.attributes.height ? div.attributes.height.value : 480;
+    const src = div.attributes.src ? div.attributes.src.value : undefined;
+    const width = div.attributes.width ? div.attributes.width.value : 640;
+    const height = div.attributes.height ? div.attributes.height.value : 480;
 
-    var controls = document.createElement('div');
+    const controls = document.createElement('div');
     controls.setAttribute('style', "z-index: 100; position: absolute; bottom: 0px; background-color: rgba(0,0,0,0.8); height: 30px; width: 100%; text-align: left;");
     this.info = document.createElement('div');
     this.info.setAttribute('style', "font-size: 14px; font-weight: bold; padding: 6px; color: lime;");
     controls.appendChild(this.info);
     div.appendChild(controls);
     
-    var useWorkers = div.attributes.workers ? div.attributes.workers.value == "true" : false;
-    var render = div.attributes.render ? div.attributes.render.value == "true" : false;
+    const useWorkers = div.attributes.workers ? div.attributes.workers.value == "true" : false;
+    const render = div.attributes.render ? div.attributes.render.value == "true" : false;
     
-    var webgl = "auto";
+    let webgl = "auto";
     if (div.attributes.webgl){
       if (div.attributes.webgl.value == "true"){
         webgl = true;
@@ -859,8 +873,8 @@ export class Broadway {
       };
     };
     
-    var infoStrPre = "Click canvas to load and play - ";
-    var infoStr = "";
+    const infoStrPre = "Click canvas to load and play - ";
+    let infoStr = "";
     if (useWorkers){
       infoStr += "worker thread ";
     }else{
@@ -868,6 +882,7 @@ export class Broadway {
     };
 
     this.player = new MP4Player(new Stream(src), useWorkers, webgl, render);
+    this.player.fps = div.attributes.frameRate ? div.attributes.frameRate.value : 1
     this.canvas = this.player.canvas;
     this.canvas.onclick = function () {
       this.play();
@@ -880,18 +895,18 @@ export class Broadway {
     
 
     this.score = null;
-    this.player.onStatisticsUpdated = function (statistics) {
+    this.player.onStatisticsUpdated = (statistics) => {
       if (statistics.videoPictureCounter % 10 != 0) {
         return;
       }
-      var info = "";
+      let info = "";
       if (statistics.fps) {
         info += " fps: " + statistics.fps.toFixed(2);
       }
       if (statistics.fpsSinceStart) {
         info += " avg: " + statistics.fpsSinceStart.toFixed(2);
       }
-      var scoreCutoff = 1200;
+      const scoreCutoff = 1200;
       if (statistics.videoPictureCounter < scoreCutoff) {
         this.score = scoreCutoff - statistics.videoPictureCounter;
       } else if (statistics.videoPictureCounter == scoreCutoff) {
@@ -900,7 +915,7 @@ export class Broadway {
       // info += " score: " + this.score;
 
       this.info.innerHTML = infoStr + info;
-    }.bind(this);
+    }
   }
 
   play() {

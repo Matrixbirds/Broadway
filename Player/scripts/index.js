@@ -9,26 +9,12 @@ const resolve = path.resolve;
 module.exports = {
   entry: {
     jquery: resolve(__dirname, '../node_modules/jquery'),
-    // stream: resolve(__dirname, "../stream"),
-    // 'jquery-ui.css': resolve(__dirname, '../jquery-ui.css'),
-    // mp4: resolve(__dirname, "../mp4"),
-    // "avc.wasm": resolve(__dirname, "../avc.wasm"),
-    // Decoder: resolve(__dirname, "../Decoder.js"),
-    // Player: resolve(__dirname, "../Player.js"),
     index: "./src/main.js",
-    // broadway: resolve(__dirname, "../broadway"),
   },
   devtool: "inline-source-map",
   module: loaders,
   plugins,
   resolve: {
-    // extensions: [ ".tsx", ".ts", ".js" ],
-    alias: {
-      // "avc.wasm": resolve(__dirname, "../avc.wasm"),
-      // Decoder: resolve(__dirname, "../Decoder"),
-      // Player: resolve(__dirname, "../Player"),
-      // YUVCanvas: resolve(__dirname, "../YUVCanvas"),
-    },
     extensions: [ ".js", ".wasm" ],
   },
   output: {

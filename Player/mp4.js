@@ -309,7 +309,7 @@ var MP4Reader = (function reader() {
         case 'trak':
           box.name = "Track Box";
           readRemainingBoxes();
-          this.tracks[box.tkhd.trackId] = new Track(this, box);
+          this.tracks[box.tkhd.trackId] = new Track(this.file, box);
           break;
         case 'tkhd':
           box.name = "Track Header Box";
