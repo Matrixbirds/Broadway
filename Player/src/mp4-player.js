@@ -24,8 +24,6 @@ export class Stream {
       }
     }
     xhr.onreadystatechange = function (event) {
-      console.log("event", event)
-      console.log("readyState", xhr.readyState)
       if (xhr.readyState === 4) {
         complete(xhr.response)
       }
@@ -245,7 +243,7 @@ export class MP4Reader {
       const child = this.readBox(stream);
       if (child.type in parent) {
         const old = parent[child.type];
-        if (!(old instanceof Array)) {
+        if (!Array.isArray(old)) {
           parent[child.type] = [old];
         }
         parent[child.type].push(child);
@@ -276,11 +274,11 @@ export class MP4Reader {
       stream.skip(remainingBytes());
     }
 
-    const readRemainingBoxes = function () {
+    const readRemainingBoxes = () => {
       const subStream = stream.subStream(stream.position, remainingBytes());
       this.readBoxes(subStream, box);
       stream.skip(subStream.length);
-    }.bind(this);
+    };
 
     readHeader();
 
@@ -707,7 +705,7 @@ export class Track {
     let offset = this.sampleToOffset(sample);
     const end = offset + this.sampleToSize(sample, 1);
     const nalUnits = [];
-    while(end - offset > 0) {
+    while (end - offset > 0) {
       const length = (new Bytestream(bytes.buffer, offset)).readU32();
       nalUnits.push(bytes.subarray(offset + 4, offset + length + 4));
       offset = offset + length + 4;
@@ -731,7 +729,7 @@ export class MP4Player {
       fps: 0,
       fpsMin: 1000,
       fpsMax: -1000,
-      webGLTextureUploadTime: 0
+      webGLTextureUploadTime: 0,
     };
 
     this.onStatisticsUpdated = function () {};
@@ -758,6 +756,8 @@ export class MP4Player {
   }
 
   updateStatistics() {
+    const reader = this.reader;
+    const video = reader.tracks[1];
     const s = this.statistics;
     s.videoPictureCounter += 1;
     s.windowPictureCounter += 1;
@@ -787,21 +787,21 @@ export class MP4Player {
 
     const fps = (s.videoPictureCounter / videoElapsedTime) * 1000;
     s.fpsSinceStart = fps;
+    s.totallySampleCount = video.getSampleCount()
     this.onStatisticsUpdated(this.statistics);
     return;
   }
 
   readAll(callback) {
     console.info("MP4Player::readAll()");
-    this.stream.readAll(null, function (buffer) {
+    this.stream.readAll(null, (buffer) => {
       this.reader = new MP4Reader(new Bytestream(buffer));
       this.reader.read();
       const video = this.reader.tracks[1];
-      console.log("video", video.trak)
       this.size = new Size(video.trak.tkhd.width, video.trak.tkhd.height);
       console.info("MP4Player::readAll(), length: " +  this.reader.stream.length);
       if (callback) callback();
-    }.bind(this));
+    });
   }
 
   set fps (frameRate) {
@@ -840,85 +840,9 @@ export class MP4Player {
         avc.decode(nal);
       });
       pic++
-      if (pic < 5000) {
-        setTimeout(decodePictures.bind(this), this.fps);
+      if (pic < video.getSampleCount()) {
+        setTimeout(decodePictures.bind(this), 1000 / this.fps);
       };
-    }.bind(this), this.fps);
-  }
-}
-
-export class Broadway {
-  constructor(div) {
-    const src = div.attributes.src ? div.attributes.src.value : undefined;
-    const width = div.attributes.width ? div.attributes.width.value : 640;
-    const height = div.attributes.height ? div.attributes.height.value : 480;
-
-    const controls = document.createElement('div');
-    controls.setAttribute('style', "z-index: 100; position: absolute; bottom: 0px; background-color: rgba(0,0,0,0.8); height: 30px; width: 100%; text-align: left;");
-    this.info = document.createElement('div');
-    this.info.setAttribute('style', "font-size: 14px; font-weight: bold; padding: 6px; color: lime;");
-    controls.appendChild(this.info);
-    div.appendChild(controls);
-    
-    const useWorkers = div.attributes.workers ? div.attributes.workers.value == "true" : false;
-    const render = div.attributes.render ? div.attributes.render.value == "true" : false;
-    
-    let webgl = "auto";
-    if (div.attributes.webgl){
-      if (div.attributes.webgl.value == "true"){
-        webgl = true;
-      };
-      if (div.attributes.webgl.value == "false"){
-        webgl = false;
-      };
-    };
-    
-    const infoStrPre = "Click canvas to load and play - ";
-    let infoStr = "";
-    if (useWorkers){
-      infoStr += "worker thread ";
-    }else{
-      infoStr += "main thread ";
-    };
-
-    this.player = new MP4Player(new Stream(src), useWorkers, webgl, render);
-    this.player.fps = div.attributes.frameRate ? div.attributes.frameRate.value : 1
-    this.canvas = this.player.canvas;
-    this.canvas.onclick = function () {
-      this.play();
-    }.bind(this);
-    div.appendChild(this.canvas);
-    
-    
-    infoStr += " - webgl: " + this.player.webgl;
-    this.info.innerHTML = infoStrPre + infoStr;
-    
-
-    this.score = null;
-    this.player.onStatisticsUpdated = (statistics) => {
-      if (statistics.videoPictureCounter % 10 != 0) {
-        return;
-      }
-      let info = "";
-      if (statistics.fps) {
-        info += " fps: " + statistics.fps.toFixed(2);
-      }
-      if (statistics.fpsSinceStart) {
-        info += " avg: " + statistics.fpsSinceStart.toFixed(2);
-      }
-      const scoreCutoff = 1200;
-      if (statistics.videoPictureCounter < scoreCutoff) {
-        this.score = scoreCutoff - statistics.videoPictureCounter;
-      } else if (statistics.videoPictureCounter == scoreCutoff) {
-        this.score = statistics.fpsSinceStart.toFixed(2);
-      }
-      // info += " score: " + this.score;
-
-      this.info.innerHTML = infoStr + info;
-    }
-  }
-
-  play() {
-    this.player.play();
+    }.bind(this), 1000 / this.fps);
   }
 }

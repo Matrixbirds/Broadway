@@ -149,7 +149,7 @@ export default class Player {
       this.decoder.onPictureDecoded = onPictureDecoded;
 
       this.decode = (parData, parInfo) => {
-        this.decoder.decode(parData, parInfo);
+        this.decoder.decode(parData, parInfo)
       };
       
     };
