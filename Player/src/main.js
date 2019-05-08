@@ -1,7 +1,7 @@
-import {
-  MP4Player,
-  Stream
-} from './mp4-player'
+import MP4Player from './mp4-player'
+import {Stream} from './utils'
+
+import Adapter from './adapter'
 
 class Broadway {
   constructor(div) {
@@ -79,35 +79,6 @@ class Broadway {
   }
 }
 
-// (function() {
-//   var timeouts = [];
-//   var messageName = "zero-timeout-message";
-
-//   // Like setTimeout, but only takes a function argument.  There's
-//   // no time argument (always zero) and no arguments (you have to
-//   // use a closure).
-//   function setZeroTimeout(fn) {
-//       timeouts.push(fn);
-//       window.postMessage(messageName, "*");
-//   }
-
-//   function handleMessage(event) {
-//       if (event.source == window && event.data == messageName) {
-//         console.log("setZeroTimeout")
-//           event.stopPropagation();
-//           if (timeouts.length > 0) {
-//               var fn = timeouts.shift();
-//               fn();
-//           }
-//       }
-//   }
-
-//   window.addEventListener("message", handleMessage, true);
-
-//   // Add the one thing we want added to the window object.
-//   window.setZeroTimeout = setZeroTimeout;
-// })();
-
 function load() {
   var nodes = document.querySelectorAll('div.broadway');
   for (var i = 0; i < nodes.length; i++) {
@@ -118,5 +89,21 @@ function load() {
 
 window.addEventListener("DOMContentLoaded", (evt) => {
   load()
+  const adapter = new Adapter('ws://localhost:8080')
+  adapter.on("connect", (evt) => {
+    adapter.emit('chat message', 'connect')
+  })
+  adapter.on("disconnect", (evt) => {
+    console.log("disconnect", evt)
+  })
+  adapter.on("chat message", (evt) => {
+    // adapter.emit('chat message', evt)
+  })
+  adapter.on("data", (buffer) => {
+    console.log("buffer >>>>>>>> ", buffer)
+  })
+  adapter.connect().then(() => {
+  })
+  loadBuf()
   console.log("[page load]")
 })

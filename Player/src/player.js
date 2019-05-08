@@ -59,7 +59,8 @@ export default class Player {
     
     let lastWidth;
     let lastHeight;
-    var onPictureDecoded = (buffer, width, height, infos) => {
+    const onPictureDecoded = (buffer, width, height, infos) => {
+      // console.log("onPictureDecoded ", buffer, width, height, infos)
       this.onPictureDecoded(buffer, width, height, infos);
       
       let startTime = nowValue();
@@ -104,7 +105,7 @@ export default class Player {
           console.log(data.consoleLog);
           return;
         };
-        
+        // console.log("worker data", data)
         onPictureDecoded.call(this, new Uint8Array(data.buf, 0, data.length), data.width, data.height, data.infos);
         
       }, false);

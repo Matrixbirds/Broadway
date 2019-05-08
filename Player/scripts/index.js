@@ -36,6 +36,16 @@ module.exports = {
     contentBase: path.join(__dirname, "./"),
     compress: true,
     progress: true,
-    open: true
+    open: true,
+    proxy: {
+      '/socket.io': {
+        target: 'ws://localhost:3000',
+        ws: true
+        // changeOrigin: true,
+        // pathRewrite: {
+        //   "^/socket.io": "/socket.io"
+        // }
+      }
+    }
   },
 };
